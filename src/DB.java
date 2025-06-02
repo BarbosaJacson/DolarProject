@@ -36,7 +36,7 @@ public class DB {
     private static Properties loadProperties() {
         Properties properties = new Properties();
 
-        // 1. Tenta usar variáveis de ambiente
+
         String user = System.getenv("DB_USER");
         String password = System.getenv("DB_PASSWORD");
         String url = System.getenv("DB_URL");
@@ -51,7 +51,7 @@ public class DB {
             return properties;
         }
 
-        // 2. Se variáveis não estão disponíveis, tenta carregar do arquivo
+
         try (FileInputStream fs = new FileInputStream("db.properties")) {
             properties.load(fs);
             return properties;

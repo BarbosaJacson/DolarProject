@@ -15,17 +15,23 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         Locale.setDefault(Locale.US);
 
-        System.out.println("Enter a value for the media:  ");
+        System.out.print("Enter a value for the media:  ");
         int periodAverage = scanner.nextInt();
         scanner.nextLine();
-        System.out.println("Enter a value for factor:  ");
+        System.out.print("Enter a value for factor:  ");
         double Factor = scanner.nextDouble();
+        System.out.println("Enter with first value for consolidation(1-3):  ");
+        int firstValue = scanner.nextInt();
+        scanner.nextLine();
+        System.out.println("Enter with second value for consolidation(1-3):  ");
+        int secondValue = scanner.nextInt();
+        scanner.nextLine();
 
         try {
             connection = DB.getConnection();
             st = connection.createStatement();
             rs = st.executeQuery("SELECT Date, Open, Highest, Lowest, " +
-                    "Closing FROM dollar_quotes_db.dolar ORDER BY Date DESC");
+                    "Closing FROM dollar_quotes_db.dolar ORDER BY Date ASC");
 
             DateTimeFormatter sdfInput = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             DateTimeFormatter sdfOutput = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -52,13 +58,17 @@ public class Main {
             double movingAverage = manager.calculateMovingAverage(periodAverage);
             double trueRange = manager.calculateTrueRange(periodAverage);
             double[] limits = manager.calculateAllLimits(movingAverage, trueRange, Factor);
-
+            List<Integer> filter = manager.calculateFilter(firstValue, secondValue, movingAverage,limits);
             System.out.printf("Moving Average (115 period): %.2f%n", movingAverage);
             System.out.printf("True Range: %.2f%n", trueRange);
             System.out.println("Limits:");
             for (int i = 0; i < limits.length; i++) {
                 System.out.printf("Limit[%d]: %.2f%n", i, limits[i]);
             }
+            for (int idx : filter) {
+                System.out.println("Valid filter founded in the line: " + idx);
+            }
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

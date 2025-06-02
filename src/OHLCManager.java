@@ -24,7 +24,8 @@ public class OHLCManager {
     public List<OHLC> getList() {
         return new ArrayList<>(list); // Defensive copy;
     }
-        public double calculateMovingAverage(int window) {
+
+    public double calculateMovingAverage(int window) {
         if (list.size() < window) {
             return 0.0;
         } else {
@@ -35,6 +36,7 @@ public class OHLCManager {
             return sum / window;
         }
     }
+
     public double calculateTrueRange(int window) {
         if (list.size() <= window) {
             throw new IllegalArgumentException("The list has fewer elements than specified");
@@ -58,6 +60,7 @@ public class OHLCManager {
             return sumTrueRange / window;
         }
     }
+
     public void setParameters(int window, double factor) {
         this.window = window;
         this.factor = factor;
@@ -70,7 +73,61 @@ public class OHLCManager {
         double Lic = movingAverage + trueRange;
         double Lsv = movingAverage - (trueRange * factor);
         double Liv = movingAverage - trueRange;
+
+
         return new double[]{Lsc, Lic, Lsv, Liv};
     }
+
+    public List<Integer> calculateFilter(int firstValue, int secondValue, double movingAverage, double[] limits) {
+        double MM = movingAverage;
+        int limite = list.size() - (firstValue + secondValue);
+        double lic = limits[1];
+        double liv = limits[3];
+        double lsc = limits[0];
+        double lsv = limits[2];
+        List<Integer> indicesComFiltroValido = new ArrayList<>();
+
+        if (list.size() <= window) {
+            throw new IllegalArgumentException("The list has fewer elements than specified");
+        } else {
+            for (int i = 0; i <= limite; i++) {
+                int countB = 0;
+                int countS = 0;
+                int bFb = 0, bFs = 0; // ← corrigido
+
+                OHLC current = list.get(i);
+                double closed = current.getClosing();
+
+                for (int j = 0; j < firstValue; j++) {
+                    double prevOneClosed = list.get(i + j).getClosing();
+                    if ((prevOneClosed > MM) && (closed > MM)) {
+                        countB++;
+                    }
+                    if ((prevOneClosed < MM) && (closed < MM)) {
+                        countS++;
+                    }
+                }
+
+                if ((countB >= firstValue) || (countS >= firstValue)) {
+                    for (int k = 0; k < secondValue; k++) {
+                        double prevTwoClosed = list.get(i + firstValue + k).getClosing();
+                        if ((lic < prevTwoClosed) && (prevTwoClosed < lsc)) bFb++;
+                        if ((liv > prevTwoClosed) && (prevTwoClosed > lsv)) bFs++;
+                    }
+
+                    if (bFb >= secondValue || bFs >= secondValue) {
+                        indicesComFiltroValido.add(i);
+                    }
+                }
+            }
+        }
+
+        return indicesComFiltroValido;
+    }
+
 }
+
+
+
+
 
