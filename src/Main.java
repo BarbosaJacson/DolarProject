@@ -46,28 +46,18 @@ public class Main {
                 double Lowest = rs.getDouble("Lowest");
                 double Closing = rs.getDouble("Closing");
                 String formattedDate = localDateTime.format(sdfOutput);
-                System.out.printf("Line %d: %s | %.2f | %.2f | %.2f | %.2f%n",
-                        rowCount, formattedDate, Open, Highest, Lowest, Closing);
+                //System.out.printf("Line %d: %s | %.2f | %.2f | %.2f | %.2f%n",
+                       // rowCount, formattedDate, Open, Highest, Lowest, Closing);
 
                 OHLC ohlc = new OHLC(localDateTime, Open, Highest, Lowest, Closing);
                 quotes.add(ohlc);
 
             }
             System.out.println("Total line processed: " + rowCount);
-            OHLCManager manager = new OHLCManager(quotes);
-            double movingAverage = manager.calculateMovingAverage(periodAverage);
-            double trueRange = manager.calculateTrueRange(periodAverage);
-            double[] limits = manager.calculateAllLimits(movingAverage, trueRange, Factor);
-            List<Integer> filter = manager.calculateFilter(firstValue, secondValue, movingAverage,limits);
-            System.out.printf("Moving Average (115 period): %.2f%n", movingAverage);
-            System.out.printf("True Range: %.2f%n", trueRange);
-            System.out.println("Limits:");
-            for (int i = 0; i < limits.length; i++) {
-                System.out.printf("Limit[%d]: %.2f%n", i, limits[i]);
-            }
-            for (int idx : filter) {
-                System.out.println("Valid filter founded in the line: " + idx);
-            }
+            managerOhlc manager = new managerOhlc(quotes);
+            int index = periodAverage -1;
+            List<Integer> filter = manager.calculateFilter(firstValue, secondValue, periodAverage,Factor);
+            System.out.println(manager.toString());
 
 
         } catch (SQLException e) {
